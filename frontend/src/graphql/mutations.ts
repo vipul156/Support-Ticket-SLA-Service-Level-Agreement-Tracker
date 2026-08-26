@@ -3,9 +3,9 @@ import type { AuthPayload, Ticket } from './types'
 
 const TICKET_FIELDS = `
   id title description status priority
-  createdAt updatedAt firstResponseAt resolvedAt
-  reporter { id email name role }
-  assignee { id email name role }
+  createdAt firstResponseAt resolvedAt
+  reporter { id name email role }
+  assignee { id name email role }
   sla {
     firstResponseDueAt resolutionDueAt
     firstResponseState resolutionState
@@ -61,13 +61,13 @@ export async function changeTicketStatus(
 
 export async function addComment(
   ticketId: string,
-  body: string,
+  content: string,
 ): Promise<{ id: string }> {
   const data = await gql<{ addComment: { id: string } }>(
-    `mutation AddComment($ticketId: ID!, $body: String!) {
-      addComment(ticketId: $ticketId, body: $body) { id }
+    `mutation AddComment($ticketId: ID!, $content: String!) {
+      addComment(ticketId: $ticketId, content: $content) { id }
     }`,
-    { ticketId, body },
+    { ticketId, content },
   )
   return data.addComment
 }
@@ -87,7 +87,7 @@ export async function resolveTicket(ticketId: string): Promise<Ticket> {
 export async function login(email: string, password: string): Promise<AuthPayload> {
   const data = await gql<{ login: AuthPayload }>(
     `mutation Login($email: String!, $password: String!) {
-      login(email: $email, password: $password) { token user { id email name role } }
+      login(email: $email, password: $password) { token user { id name email role } }
     }`,
     { email, password },
   )
@@ -95,18 +95,18 @@ export async function login(email: string, password: string): Promise<AuthPayloa
 }
 
 export async function register(
-  email: string,
   name: string,
+  email: string,
   password: string,
   role: string,
 ): Promise<AuthPayload> {
   const data = await gql<{ register: AuthPayload }>(
-    `mutation Register($email: String!, $name: String!, $password: String!, $role: UserRole) {
-      register(email: $email, name: $name, password: $password, role: $role) {
-        token user { id email name role }
+    `mutation Register($name: String!, $email: String!, $password: String!, $role: UserRole) {
+      register(name: $name, email: $email, password: $password, role: $role) {
+        token user { id name email role }
       }
     }`,
-    { email, name, password, role },
+    { name, email, password, role },
   )
   return data.register
 }

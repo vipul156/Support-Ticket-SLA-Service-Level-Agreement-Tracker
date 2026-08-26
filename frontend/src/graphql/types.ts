@@ -12,7 +12,7 @@ export interface User {
 
 export interface Comment {
   id: string
-  body: string
+  content: string
   createdAt: string
   author: User
 }
@@ -35,7 +35,6 @@ export interface Ticket {
   reporter: User
   assignee: User | null
   createdAt: string
-  updatedAt: string
   firstResponseAt: string | null
   resolvedAt: string | null
   sla: SLAInfo
@@ -47,9 +46,8 @@ export interface PageInfo {
 }
 
 export interface TicketConnection {
-  totalCount: number
+  nodes: Ticket[]
   pageInfo: PageInfo
-  edges: { cursor: string; node: Ticket }[]
 }
 
 export interface Dashboard {

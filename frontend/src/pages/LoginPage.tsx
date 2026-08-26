@@ -21,7 +21,7 @@ export function LoginPage(): JSX.Element {
       const payload =
         mode === 'login'
           ? await login(email, password)
-          : await register(email, name, password, role)
+          : await register(name, email, password, role)
       signIn(payload.user, payload.token)
     } catch (err) {
       setError(err instanceof ApiError ? `${err.code}: ${err.message}` : 'Login failed')

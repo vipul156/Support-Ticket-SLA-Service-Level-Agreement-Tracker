@@ -9,9 +9,9 @@ import type {
 
 const TICKET_FIELDS = `
   id title description status priority
-  createdAt updatedAt firstResponseAt resolvedAt
-  reporter { id email name role }
-  assignee { id email name role }
+  createdAt firstResponseAt resolvedAt
+  reporter { id name email role }
+  assignee { id name email role }
   sla {
     firstResponseDueAt resolutionDueAt
     firstResponseState resolutionState
@@ -28,14 +28,28 @@ export async function fetchTickets(vars: {
   cursor?: string
 }): Promise<TicketConnection> {
   const data = await gql<{ tickets: TicketConnection }>(
-    `query Tickets($status: TicketStatus, $priority: Priority, $assigneeId: ID, $slaState: SLAState, $take: Int, $cursor: String) {
-      tickets(status: $status, priority: $priority, assigneeId: $assigneeId, slaState: $slaState, take: $take, cursor: $cursor) {
-        totalCount
+    `query Tickets($filters: TicketFiltersInput, $take: Int, $cursor: String) {
+      tickets(filters: $filters, take: $take, cursor: $cursor) {
+        nodes { ${TICKET_FIELDS} }
         pageInfo { hasNextPage endCursor }
-        edges { cursor node { ${TICKET_FIELDS} } }
       }
     }`,
-    vars,
+    {
+      filters:
+        vars.status === undefined &&
+        vars.priority === undefined &&
+        vars.assigneeId === undefined &&
+        vars.slaState === undefined
+          ? undefined
+          : {
+              status: vars.status,
+              priority: vars.priority,
+              assigneeId: vars.assigneeId,
+              slaState: vars.slaState,
+            },
+      take: vars.take,
+      cursor: vars.cursor,
+    },
   )
   return data.tickets
 }
@@ -43,7 +57,10 @@ export async function fetchTickets(vars: {
 export async function fetchTicket(id: string): Promise<Ticket> {
   const data = await gql<{ ticket: Ticket }>(
     `query Ticket($id: ID!) {
-      ticket(id: $id) { ${TICKET_FIELDS} comments { id body createdAt author { id email name role } } }
+      ticket(id: $id) {
+        ${TICKET_FIELDS}
+        comments { id content createdAt author { id name email role } }
+      }
     }`,
     { id },
   )
@@ -59,7 +76,7 @@ export async function fetchDashboard(): Promise<Dashboard> {
 
 export async function fetchUsers(role?: string): Promise<User[]> {
   const data = await gql<{ users: User[] }>(
-    `query Users($role: UserRole) { users(role: $role) { id email name role } }`,
+    `query Users($role: UserRole) { users(role: $role) { id name email role } }`,
     role !== undefined && role !== '' ? { role } : {},
   )
   return data.users
