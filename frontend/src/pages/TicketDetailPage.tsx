@@ -17,7 +17,7 @@ const STATUSES: TicketStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
 interface TicketWithComments extends Ticket {
   comments: {
     id: string
-    body: string
+    content: string
     createdAt: string
     author: User
   }[]
@@ -185,7 +185,7 @@ export function TicketDetailPage({ ticketId }: { ticketId: string }): JSX.Elemen
                 <span className="role-chip">{c.author.role}</span>
                 <time>{formatDateTime(c.createdAt)}</time>
               </div>
-              <p className="pre-wrap">{c.body}</p>
+              <p className="pre-wrap">{c.content}</p>
             </li>
           ))}
         </ul>

@@ -5,7 +5,22 @@ import { LoginPage } from './pages/LoginPage'
 import { TicketsPage } from './pages/TicketsPage'
 import { TicketDetailPage } from './pages/TicketDetailPage'
 import type { User } from './graphql/types'
-import { gql } from './graphql/client'
+import { getToken } from './graphql/client'
+
+function decodeUser(token: string): User | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] ?? ''))
+    if (typeof payload.sub !== 'string' || typeof payload.role !== 'string') return null
+    return {
+      id: String(payload.sub),
+      name: typeof payload.name === 'string' ? payload.name : '',
+      email: typeof payload.email === 'string' ? payload.email : '',
+      role: payload.role === 'AGENT' ? 'AGENT' : 'REPORTER',
+    }
+  } catch {
+    return null
+  }
+}
 
 function CurrentUserChip(): JSX.Element {
   const { user } = useAuth()
@@ -59,19 +74,21 @@ function Shell(): JSX.Element {
 }
 
 function Root(): JSX.Element {
-  const { signIn, token } = useAuth()
+  const { signIn } = useAuth()
   const [booting, setBooting] = useState(true)
 
   useEffect(() => {
-    if (token !== null) {
-      gql<{ me: User }>('{ me { id email name role } }')
-        .then((data) => signIn(data.me, token))
-        .catch(() => window.localStorage.removeItem('sla_tracker_token'))
-        .finally(() => setBooting(false))
-      return
+    const storedToken = getToken()
+    if (storedToken !== null) {
+      const user = decodeUser(storedToken)
+      if (user !== null) {
+        signIn(user, storedToken)
+      } else {
+        window.localStorage.removeItem('sla_tracker_token')
+      }
     }
     setBooting(false)
-  }, [token, signIn])
+  }, [signIn])
 
   if (booting) return <div className="boot">Loading…</div>
   return <Shell />

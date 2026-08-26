@@ -54,8 +54,8 @@ export function TicketsPage(): JSX.Element {
         slaState: slaState === '' ? undefined : slaState,
         take: 50,
       })
-      setTickets(conn.edges.map((edge) => edge.node))
-      setTotal(conn.totalCount)
+      setTickets(conn.nodes)
+      setTotal(conn.nodes.length)
       setError(null)
     } catch (err) {
       setError(err instanceof ApiError ? `${err.code}: ${err.message}` : 'Failed to load')
