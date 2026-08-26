@@ -10,7 +10,7 @@ import { getToken } from './graphql/client'
 function decodeUser(token: string): User | null {
   try {
     const payload = JSON.parse(atob(token.split('.')[1] ?? ''))
-    if (typeof payload.sub !== 'string' || typeof payload.role !== 'string') return null
+    if (payload.sub === undefined || typeof payload.role !== 'string') return null
     return {
       id: String(payload.sub),
       name: typeof payload.name === 'string' ? payload.name : '',
