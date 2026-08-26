@@ -6,6 +6,8 @@ import { AppError } from '../errors.js';
 export interface JwtPayload {
   sub: number;
   role: Role;
+  name: string;
+  email: string;
 }
 
 export interface AuthUser {
@@ -15,8 +17,8 @@ export interface AuthUser {
   role: Role;
 }
 
-export function signToken(user: Pick<User, 'id' | 'role'>, secret: string, expiresIn: string): string {
-  return sign({ sub: user.id, role: user.role }, secret, {
+export function signToken(user: Pick<User, 'id' | 'role' | 'name' | 'email'>, secret: string, expiresIn: string): string {
+  return sign({ sub: user.id, role: user.role, name: user.name, email: user.email }, secret, {
     expiresIn: expiresIn as unknown as number,
   });
 }
@@ -30,7 +32,12 @@ export function verifyToken(token: string, secret: string): JwtPayload {
     if (decoded.role !== 'AGENT' && decoded.role !== 'REPORTER') {
       throw new AppError('UNAUTHORIZED', 'Invalid token role');
     }
-    return { sub: decoded.sub, role: decoded.role };
+    return {
+      sub: decoded.sub,
+      role: decoded.role,
+      name: typeof decoded.name === 'string' ? decoded.name : '',
+      email: typeof decoded.email === 'string' ? decoded.email : '',
+    };
   } catch (e: unknown) {
     if (e instanceof AppError) throw e;
     throw new AppError('UNAUTHORIZED', 'Invalid or expired token');
