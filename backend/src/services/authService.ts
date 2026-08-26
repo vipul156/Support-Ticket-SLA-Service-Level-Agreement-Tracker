@@ -38,7 +38,7 @@ export class AuthService {
     return toAuthUser(user);
   }
 
-  private tokenFor(user: Pick<User, 'id' | 'role'>): string {
+  private tokenFor(user: Pick<User, 'id' | 'role' | 'name' | 'email'>): string {
     return signToken(user, this.jwtSecret, this.jwtExpiresIn);
   }
 }
