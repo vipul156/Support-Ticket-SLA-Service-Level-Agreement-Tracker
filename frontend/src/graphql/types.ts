@@ -22,8 +22,8 @@ export interface SLAInfo {
   resolutionDueAt: string
   firstResponseState: SLAState
   resolutionState: SLAState
-  firstResponseRemainingMinutes: number | null
-  resolutionRemainingMinutes: number | null
+  firstResponseRemainingMinutes: number
+  resolutionRemainingMinutes: number
 }
 
 export interface Ticket {

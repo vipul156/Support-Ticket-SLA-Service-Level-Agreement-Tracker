@@ -202,18 +202,11 @@ function applySort(tickets: Ticket[], sort: SortKey): Ticket[] {
 }
 
 function worstRemaining(t: Ticket): number {
-  const first = t.sla.firstResponseRemainingMinutes
-  const res = t.sla.resolutionRemainingMinutes
-  if (first === null && res === null) return Number.MAX_SAFE_INTEGER
-  if (first !== null && res !== null) return Math.min(first, res)
-  return first ?? res ?? 0
+  return Math.min(t.sla.firstResponseRemainingMinutes, t.sla.resolutionRemainingMinutes)
 }
 
 function TicketRow({ ticket }: { ticket: Ticket }): JSX.Element {
-  const worst =
-    worstRemaining(ticket) === Number.MAX_SAFE_INTEGER
-      ? null
-      : worstRemaining(ticket)
+  const worst = worstRemaining(ticket)
   return (
     <tr>
       <td>
@@ -241,7 +234,8 @@ function TicketRow({ ticket }: { ticket: Ticket }): JSX.Element {
           <div className="sub">{formatMinutes(ticket.sla.firstResponseRemainingMinutes)} left</div>
         )}
       </td>
-      <td>{formatDateTime(ticket.createdAt)}</td>
+      <td>{formatDateTime(ticket.sla.firstResponseDueAt)}</td>
+      <td>{formatDateTime(ticket.sla.resolutionDueAt)}</td>
       <td>{formatDateTime(ticket.createdAt)}</td>
     </tr>
   )
