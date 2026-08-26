@@ -1,0 +1,120 @@
+scalar DateTime
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum SLAState {
+  ON_TRACK
+  AT_RISK
+  BREACHED
+  MET
+}
+
+enum UserRole {
+  REPORTER
+  AGENT
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  role: UserRole!
+}
+
+type SLAInfo {
+  firstResponseDueAt: String!
+  resolutionDueAt: String!
+  firstResponseState: SLAState!
+  resolutionState: SLAState!
+  firstResponseRemainingMinutes: Int!
+  resolutionRemainingMinutes: Int!
+}
+
+type Ticket {
+  id: ID!
+  title: String!
+  description: String!
+  priority: Priority!
+  status: TicketStatus!
+  reporter: User!
+  assignee: User
+  createdAt: String!
+  firstResponseAt: String
+  resolvedAt: String
+  sla: SLAInfo!
+  comments: [Comment!]!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  author: User!
+  createdAt: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String
+}
+
+type TicketConnection {
+  nodes: [Ticket!]!
+  pageInfo: PageInfo!
+}
+
+type TicketDashboard {
+  openTickets: Int!
+  inProgressTickets: Int!
+  atRiskTickets: Int!
+  breachedTickets: Int!
+}
+
+type Holiday {
+  id: ID!
+  date: String!
+  name: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+input TicketFiltersInput {
+  status: TicketStatus
+  priority: Priority
+  assigneeId: ID
+  slaState: SLAState
+}
+
+type Query {
+  me: User!
+  ticket(id: ID!): Ticket!
+  tickets(filters: TicketFiltersInput, take: Int, cursor: String): TicketConnection!
+  dashboard: TicketDashboard!
+  users(role: UserRole): [User!]!
+  holidays: [Holiday!]!
+}
+
+type Mutation {
+  register(name: String!, email: String!, password: String!, role: UserRole): AuthPayload!
+  login(email: String!, password: String!): AuthPayload!
+  createTicket(title: String!, description: String!, priority: Priority!): Ticket!
+  assignTicket(ticketId: ID!, assigneeId: ID!): Ticket!
+  changeTicketStatus(ticketId: ID!, status: TicketStatus!): Ticket!
+  addComment(ticketId: ID!, content: String!): Comment!
+  resolveTicket(ticketId: ID!): Ticket!
+  addHoliday(date: String!, name: String!): Holiday!
+}
